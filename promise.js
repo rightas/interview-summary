@@ -1,0 +1,163 @@
+// 模拟实现Promise
+// Promise利用三大手段解决回调地狱:
+// 回调函数延迟绑定  返回值穿透 错误冒泡
+
+
+// 定义三种状态
+const PENDING = 'PENDING';
+const FULFILLED = 'FULFILLED';
+const REJECTED = 'REJECTED';
+
+class Promise {
+  constructor(excetor) {
+    // 初始状态
+    this.status = PENDING;
+    // 将成功、失败结果放在this上，便于then catch访问
+    this.value = undefined;
+    this.reason = undefined;
+    // 成功回调队列
+    this.onFulfilledCallbacks = [];
+    // 失败回调队列
+    this.onRejectedCallbacks = [];
+
+    const resolve = value => {
+      // 只有进行中状态才能更改状态
+      if (this.status === PENDING) {
+        this.status = FULFILLED;
+        this.value = value;
+        // 成功态函数一次执行
+        this.onFulfilledCallbacks.forEach(fn => fn(this.value));
+      }
+    }
+
+    const reject = reason => {
+      // 指甲油进行中状态才能更改状态
+      if (this.status = PENDING) {
+        this.status = REJECTED;
+        this.reason = reason;
+        // 失败态函数一次执行
+        this.onRejectedCallbacks.forEach(fn => fn(this.reason));
+      }
+    }
+
+    try {
+      // 立即执行executor 
+      // 将内部的resolve和reject传入executor，用户可调用resolve和reject
+      excetor(resolve, reject)
+    } catch (e) {
+      reject(e)
+    }
+  }
+
+
+
+  // 222
+
+  then(onFulfilled, onRejected) {
+    onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : value => value;
+    onRejected = typeof onRejected === 'function' ? onRejected : reason => {
+      throw new Error(reason instanceof Error ? reason.message : reason)
+    };
+    //保存 this
+    const self = this;
+    return new Promise((resolve, reject) => {
+      if (self.status === PENDING) {
+        self.onFulfilledCallbacks.push(() => {
+          try {
+            setTimeout(() => {
+              const result = onFulfilled(self.value);
+              // 分两种情况
+              // 1回调函数返回值是Promise 执行then操作
+              // 2 如果不是Promise 跳用新Promise的resolve函数
+              result instanceof Promise ? Promise.then(resolve, reject) : resolve(result);
+            })
+          } catch (e) {
+            reject(e)
+          }
+        })
+
+        self.onRejectedCallbacks.push(() => {
+          try {
+            setTimeout(() => {
+              const result = onRejected(self.reason);
+              // 此时是reject
+              result instanceof Promise ? result.then(resolve, reject) : resolve(result)
+            })
+          } catch (e) {
+            reject(e)
+          }
+        })
+
+      } else if (self.status === FULFILLED) {
+        try {
+          setTimeout(() => {
+            const result = onFulfilled(self.value);
+            result instanceof Promise ? result.then(resolve, reject) : resolve(result);
+          })
+        } catch (e) {
+          reject(e)
+        }
+      } else if (self.status === REJECTED) {
+        try {
+          setTimeout(() => {
+            const result = onRejected(self.reason);
+            result instanceof Promise ? result.then(resolve, reject) : resolve(result);
+          })
+        } catch (e) {
+          reject(e)
+        }
+      }
+    })
+  }
+
+  catch (onRejected) {
+    return this.then(null, onRejected)
+  }
+
+  // promise实例  不是promise 实例
+  static resolve(value) {
+    if (value instanceof Promise) {
+      // 如果是Promise 直接返回
+      return value
+    } else {
+      // 如果不是Promise实例，返回一个新的Promise对象，状态为FULFILLED
+      return new Promise((resolve, reject) => resolve(value))
+    }
+  }
+
+  // promise.reject 会返回一个promise实例，状态为REJECTED
+  // 与Promise.resolve不同的是,Promise.rejected方法的参数会原封不动地作为reject的参数
+  static reject(reason) {
+    return new Promise((resolve, reject) => reject(reason))
+  }
+
+  // all 所有的promise 状态为FUlFILLED，返回的promise状态才变为FUlFILLED
+  //     一个promise状态为Rejected，返回的promise状态就变为Rejected
+  //     数组成员不一定都是promise， 需要使用promise.resolve处理 
+  static all(PromiseArr) {
+    let len = PromiseArr.length;
+    const values = new Array(len);
+    // 记录已经成功执行的promise个数
+    let count = 0;
+    return new Promise((resolve, reject) => {
+      for (let i = 0; i < len; i++) {
+        Promise.resolve(PromiseArr[i]).then((val) => {
+          values[i] = val;
+          count++;
+          // 如果全部执行完，返回promise的状态就可以改变
+          if (count === len) resolve(values)
+        }, err => reject(err))
+      }
+    })
+  }
+
+  // race
+  static race(PromiseArr) {
+    return new Promise((resolve, reject) => {
+      PromiseArr.forEach(p => {
+        Promise.resolve(p).then(val => resolve(val), err => reject(err))
+      })
+    })
+  }
+
+}

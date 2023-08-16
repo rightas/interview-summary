@@ -1,0 +1,486 @@
+1: 基本类型主要为以下7种
+  Number String Boolean Undefined null symbol bigInt
+2: 数组的常用方法有哪些
+  push() unshift() splice() concat() splice() 会影响原数组 slice() 返回新数组 forEach() 应用类型改变 建议使用 arr[index] 改变
+3: JavaScript字符串的常用方法有哪些
+slice() substr() substring() toLowerCase()、 toUpperCase() padEnd() padStart()
+4: 谈谈 JavaScript 中的类型转换机制
+显示转换  隐式转换(+ - * ➗)
+5: == 和 ===区别，分别在什么情况使用
+6:深拷贝浅拷贝的区别？如何实现一个深拷贝
+  浅拷贝，指的是创建新的数据，这个数据有着原始数据属性值的一份精确拷贝
+  深拷贝：拷贝的是地址   _.cloneDeep() jQuery.extend()  JSON.stringify()
+    JSON.stringify()： 但是这种方式存在弊端，会忽略undefined、symbol和函数
+7: 说说你对闭包的理解？
+  一个函数和对其周围状态的引用捆绑在一起（或者说函数被引用包围），这样的组合就是闭包（closure）
+  原则：如果该闭包会一直使用，那么它可以作为全局变量而存在；但如果使用频率不高，而且占用内存又比较大的话，那就尽量让它成为一个局部变量。
+8: 说说你对作用域链的理解
+  全局作用域 函数作用域 块级作用域
+9: javaScript原型，原型链 ? 有什么特点？
+  概念：每个 class都有显示原型 prototype  每个实例都有隐式原型 _ proto_  实例的_ proto_指向对应 class 的 prototype
+  一切对象都是继承自Object对象，Object 对象直接继承根源对象null
+  Function对象的__proto__会指向自己的原型对象，最终还是继承自Object对象
+10: Javascript如何实现继承  
+ 原型链继承：两个实例使用的是同一个原型对象，内存空间是共享的 Child1.prototype = new Parent();
+ 构造函数继承：只能继承父类的实例属性和方法，不能继承原型属性或者方法（借助 call） function Child(){
+    Parent1.call(this);
+    this.type = 'child'
+  }
+  组合继承(原型链+构造函数)：new Parent3 执行了两次，造成了多构造一次的性能开销
+  原型式继承：多个实例的引用类型属性指向相同的内存，存在篡改的可能 浅拷贝  let person5 = Object.create(parent4);
+  寄生式继承：利用这个浅拷贝的能力再进行增强，添加一些方法
+  寄生组合式继承：使用Object.create 进行改造
+11:谈谈this对象的理解 
+  new绑定优先级 > 显示绑定优先级 > 隐式绑定优先级 > 默认绑定优先级
+  缺陷： 嵌套函数中的 this 不会从外层函数中继承
+    // var myObj = {
+    //   name: '极客时间',
+    //   showThis: function () {
+    //     console.log(this)
+    //     function bar() {console.log(this, '000')}
+    //     bar()
+    //   }
+    // }
+    // myObj.showThis()
+12: JavaScript中执行上下文和执行栈是什么？
+  全局执行上下文：只有一个，浏览器中的全局对象就是 window对象，this 指向这个全局对象
+  函数执行上下文：存在无数个，只有在函数被调用的时候才会被创建，每次调用函数都会创建一个
+                新的执行上下文
+  Eval 函数执行上下文： 指的是运行在 eval 函数中的代码，很少用而且不建议使用
+13: 说说JavaScript中的事件模型
+  事件捕获阶段(capture phase)
+  处于目标阶段(target phase)
+  事件冒泡阶段(bubbling phase)
+14: typeof 与 instanceof 区别 
+  typeof 操作符返回一个字符串，表示未经计算的操作数的类型 判断基本数据类型  
+    优点：能够快速区分基本数据类型
+    缺点：不能将Object、Array和Null区分，都返回object
+  instanceof 运算符用于检测构造函数的 prototype 属性是否出现在某个实例对象的原型链上
+    优点：能够区分Array、Object和Function，适合用于判断自定义的类实例对象
+    缺点：Number，Boolean，String基本数据类型不能判断
+  instanceof 主要的实现原理就是只要右边变量的 prototype 在左边变量的原型链上即可
+
+  可以使用 Object.prototype.toString.call()  toString.call(null) 返回[object Null]  
+
+  typeof 在判断 null 的时候就出现问题了，由于 null 的所有机器码均为0，因此直接被当做了对象来看待。
+15: 说说new操作符具体干了什么  
+  创建一个新的对象obj
+  将对象与构建函数通过原型链连接起来
+  将构建函数中的this绑定到新建的对象obj上
+  根据构建函数返回类型作判断，如果是原始值则被忽略，如果是返回对象，需要正常处理
+  
+  创建一个新对象 将对象与构造函数通过原型链链接起来 将构造函数中this绑定到新的对象obj中 然后返回这个对象
+16:   bind、call、apply 区别？
+  1: 三者都可以改变函数的this对象指向
+  2: 三者都可以传参，但是apply是数组，而call是参数列表，且apply和call是一次性传入参数，
+     而bind可以分为多次传入  第一个参数是this 指向
+     apply接收参数的是数组，call接受参数列表，`` bind方法通过传入一个对象，返回一个 this 绑定了传入对象的新函数。
+  bind  实现原理：   
+17: 说说你对事件循环的理解   
+  宏任务(macrotask)：
+    script (可以理解为外层同步代码) setTimeout/setInterval UI rendering/UI事件 postMessage、MessageChannel setImmediate、I/O（Node.js）
+  微任务(microtask)：
+    Promise.then MutaionObserver Object.observe（已废弃；Proxy 对象替代） process.nextTick（Node.js）
+
+  在JavaScript中，所有的任务都可以分为
+  同步任务：立即执行的任务，同步任务一般会直接进入到主线程中执行
+  异步任务：异步执行的任务，比如ajax网络请求，setTimeout定时函数等  
+  微任务：Promise.then MutaionObserver Object.observe（已废弃；Proxy 对象替代） process.nextTick（Node.js）
+  宏任务：script (可以理解为外层同步代码) setTimeout/setInterval UI rendering/UI事件 postMessage、MessageChannel setImmediate、I/O（Node.js）
+  
+  微任务包括： promise 的回调、async/await、node 中的 process.nextTick 、对 Dom 变化监听的 MutationObserver。
+  宏任务包括： script 脚本的执行、setTimeout ，setInterval ，setImmediate 一类的定时事件，还有如 I/O 操作、UI 渲染等。
+
+18: 举例说明你对尾递归的理解，有哪些应用场景
+
+19: 说说 JavaScript 中内存泄漏的几种情况？
+ 意外的全局变量 没有清理对DOM元素的引用同样造成内存泄露 定时器也常会造成内存泄露
+20: Javascript本地存储的方式有哪些？区别及应用场景 
+  cookie、sessionStorage、localStorage三者的区别主要如下：
+    存储大小：cookie数据大小不能超过4k，sessionStorage和localStorage虽然也有存储大小的限制，但比cookie大得多，可以达到5M或更大
+    有效时间：localStorage存储持久数据，浏览器关闭后数据不丢失除非主动删除数据； sessionStorage数据在当前浏览器窗口关闭后自动删除；cookie设置的cookie过期时间之前一直有效，即使窗口或浏览器关闭
+    数据与服务器之间的交互方式，cookie的数据会自动的传递到服务器，服务器端也可以写cookie到客户端； sessionStorage和localStorage不会自动把数据发给服务器，仅在本地保存
+21:说说 Javascript 数字精度丢失的问题，如何解决
+  可以使用第三方库，如Math.js、BigDecimal.js
+22: 什么是防抖和节流？有什么区别？如何实现？
+  节流: n 秒内只运行一次，若在 n 秒内重复触发，只有一次生效 （规定的时间内，函数只能被调用一次，且是最先被触发调用的那次）
+  场景: 滚动加载更多、搜索框搜的索联想功能、高频点击、表单重复提交…
+  function throttled1(fn, delay = 500) {
+    let oldtime = Date.now();
+    return function(...args){
+      let newtime = Date.now();
+      if(newtime - oldtime >= delay) {
+        fn.apply(null, args);
+        oldtime = Date.now()
+      }
+    }、
+  }
+  防抖: n 秒后在执行该事件，若在 n 秒内被重复触发，则重新计时
+  场景: 搜索框搜索输入，并在输入完以后自动搜索、手机号，邮箱验证输入检测、窗口大小 resize 变化后，再重新渲染
+  function throttled2(fn, delay = 200) {
+    let timer = null;
+    return function(..args){
+      if (!timer){
+        timer = setTimeout(()=> {
+          fn.aplly(this, args);
+          timer = null;
+        }, delay)
+      }
+    }
+  }
+23: web常见的攻击方式有哪些？如何防御？  
+  XSS (Cross Site Scripting) 跨站脚本攻击
+    存储型指的是恶意脚本会存储在目标服务器上，当浏览器请求数据时，脚本从服务器传回并执行。
+    反射型指的是攻击者诱导用户访问一个带有恶意代码的 URL 后，服务器端接收数据后处理，然后把带有恶意代码的数据发送到浏览器端，浏览器端解析这段带有 XSS 代码的数据后当做脚本执行，最终完成 XSS 攻击。 
+    DOM 型指的通过修改页面的 DOM 节点形成的 XSS。
+
+
+    CSP安全策略的限制也是主要的XSS防范手段之一
+    cookie 设置HttpOnly，配合token或验证码防范
+    引入XSS库针对用户输入源过滤，设置标签白名单
+    Htmlencode 转义特殊字符
+
+  CSRF（Cross-site request forgery）跨站请求伪造
+    阻止不明外域的访问
+    同源检测: Referer 字段会告诉服务器该网页是从哪个页面链接过来的
+    Samesite Cookie: 在设置 cookie 属性的时候设置 Samesite ，限制 cookie 不能作为被第三方使用, Samesite 一共有两种模式，一种是严格模式
+    提交时要求附加本域才能获取的信息
+    CSRF Token
+    双重Cookie验证
+  SQL注入攻击
+24:  如何实现上拉加载，下拉刷新？
+  iscroll、better-scroll、pulltorefresh.js库
+25: ajax readyState 0: 初始化 1: 载入 2:载入完成 3: 解析 4:完成
+
+26: 线程和进程是什么  
+  进程：cpu分配资源的最小单位  线程：是cpu最小的调度单位 一个进程中可以有多个线程
+  进程和线程之间的关系有以下四个特点：
+  （1）进程中的任意一线程执行出错，都会导致整个进程的崩溃。
+  （2）线程之间共享进程中的数据。
+  （3）进程之间的内容相互隔离。
+
+27:如何实现一个new
+  1.创建一个空的简单Javascript对象 （即{}）;
+  2.链接该对象（即设置该对象的构造函数）到另一个对象；
+  3.将步骤1新创建的对象作为this的上下文；
+  4.如果该函数没有返回对象，则返回this；
+28: git中rebase和merge的区别是什么
+区别：
+1、rebase把当前的commit放到公共分支的最后面，merge把当前的commit和公共分支合并在一起；
+2、用merge命令解决完冲突后会产生一个commit，而用rebase命令解决完冲突后不会产生额外的commit。
+29: 分享一些 TS 的高级语法，带你进阶 TS
+  1: 泛型
+    function identity<T>(arg: T): T { 
+      return arg;
+    }
+  2: keyof 关键字
+    所谓 keyof 关键字代表它接受一个对象类型作为参数，并返回该对象所有 key 值组成的联合类型。
+  3:分发
+    在讲述分发的概念，我会先和你聊聊 TS 中的 Conditional Types （条件类型）。
+    因为大多数高级类型都是基于条件类型，同时分发的概念也和 Conditional Types 息息相关，所以我们先来看看所谓的 Conditional Types 究竟是什么。
+，
+
+32: 浏览器有哪些缓存： 先强缓存在协商缓存
+  强缓存有两个相关字段：Expires、Cache-Control
+  HTTP1.0版本：使用的是Expires
+  HTTP1.1版本：使用的是Cache-Control
+  Expires:缓存过期时间，用来指定资源到期时间，是服务器端的具体时间点。
+  Cache-Control的优先级高于Expires。Expires是文本服务器端响应消息字段，在响应http请求时告诉浏览器在过期时间前浏览器可以从浏览器缓存中读取数据，
+  而无需再次请求。
+
+  Expires时间格式必须是GMT格式 
+  Cache-Control 中可以设置一些属性 比如：
+    max-age 指示客户机可以接收生存期不大于指定时间（以秒为单位）的响应。
+    no-cache 指示请求或响应消息不能缓存（HTTP/1.0用Pragma的no-cache替换）
+
+  协商缓存就是强制缓存失效后，浏览器携带缓存标识向服务器发起请求，由服务器根据缓存标识决定是否使用缓存的过程。
+  协商缓存的标识也是在响应报文的HTTP头中和请求结果一起返回给浏览器的，控制协商缓存的字段分别有：
+  HTTP1.0版本：Last-Modified / If-Modified-Since
+  HTTP1.1版本：Etag / If-None-Match，
+
+  但是这样就会有新的问题，服务器时间和浏览器时间可能会不一致，所以HTTP1.1提出新的字段替代它。
+  浏览器会先去查看强缓存 (Expires 和 cache-control) 判断是否过期，如果强缓存生效，
+  返回 200 并从缓存中读取资源；若不生效则进行协商缓存 (Last-Modified / If-Modified-Since 和 
+  Etag / If-None-Match)，协商缓存由服务器决定是否使用缓存，若协商缓存失效，那么代表该请求的缓存失效，返回 200，
+  并重新返回资源和缓存标识，再次存入浏览器缓存中；
+  生效则返回 304，并从缓存中读取资源 (协商缓存之前要经过 DNS 域名解析，之后建立 TCP 链接)
+33: code码
+  301: 请求的URL已经移走，响应中应该包含一个Location，说明资源现在的位置
+  307 似301，客户端应该用Location首部给出的URL对资源进行临时定位
+      和 302 是一致的，唯一的区别在于，307 状态码不允许浏览器将原本为 POST 的请求重定向到 GET 请求上。  
+34: http中的post请求发生了两次（多了一次options请求）的原因   
+  在发生正式的请求之前，先进行一次预检请求。看服务端返回一些信息，浏览器拿到之后，看后台是否允许进行访问。 
+
+35: 堆的垃圾回收 要比 栈的垃圾回收 更耗内存
+
+36: for in 和 for of 的区别
+for in遍历的是下标，而for of遍历的是属性值 数组
+for in 遍历时可以遍历到当前数组的所有属性名和方法名。包括其原型链上定义的属性名和方法名
+而使用for of遍历时则不会遍历原型链上的属性和方法且不会遍历定义在数组上的属性和方法。
+
+37: promise  方法
+  all: 可以传入多个promise实例 所有状态都成功 返回是个数组 一个失败则返回这个失败的promise
+  allSettled：只有等到所有参数都返回结果，不管是fulled还是rejected
+  race: Promise.race方法的参数与Promise.all方法一样，如果不是 Promise 实例，就会先调用下面讲到的Promise.resolve方法，将参数转为 Promise 实例，再进一步处理
+
+38: 301 出现的场景
+新建一个网站、新网页已创建、损坏的URL链接、修复网页并希望它重定向到另一个页面。
+
+
+39: 如何减少页面回流
+脱离文档流
+
+40: async 和 promise区别
+ 正常情况下，await命令后面是一个 Promise对象，返回该对象的结果。如果不是 Promise对象，就直接返回对应的值
+ 不管await后面跟着的是什么，await都会阻塞后面的代码
+  async function fn1 (){
+      console.log(1)
+      await fn2()
+      console.log(2) // 阻塞
+  }
+  async function fn2 (){
+      console.log('fn2')
+  }
+  fn1()
+  console.log(3)
+  //1，fn2，3，2
+
+  async function async1() {
+    console.log('async1 start')
+    await async2()
+    console.log('async1 end')
+  }
+  async function async2() {
+      console.log('async2')
+  }
+  console.log('script start')
+  setTimeout(function () {
+      console.log('settimeout')
+  })
+  async1()
+  new Promise(function (resolve) {
+      console.log('promise1')
+      resolve()
+  }).then(function () {
+      console.log('promise2')
+  })
+  console.log('script end')
+  // script start、async1 start、async2、promise1、script end、async1 end、promise2、settimeout
+1 promise是ES6，async/await是ES7
+2 async/await相对于promise来讲，写法更加优雅
+3 reject状态：
+    1）promise错误可以通过catch来捕捉，建议尾部捕获错误，
+    2）async/await既可以用.then又可以用try-catch捕捉
+
+41：img 图像底部留白的原因以及解决方法
+原因： 由于img元素默认为inline元素，而inline元素的vertical-align属性的默认值为baseline
+文字基线对齐，正好图片底部的留白就是baseline和bottom之间的距离
+方法： 
+1:将图片设置为块级元素
+2:设置父元素的文字大小为0
+3:设置父元素添加overflow属性
+如果父元素规定了固定的宽高，图片大小就会跟随父元素而定，则可以给父元素添加overflow属性：overflow:hidden ;
+
+42: img object-fit
+ fill|contain|cover|scale-down|none|initial|inherit;  默认fill
+
+43: jQuery链式编程的实现原理: jQuery内部利用this返回了自己本身。
+
+立即执行函数表达式（IIFE）：
+  当圆括号出现在匿名函数的末尾想要调用函数时，它会默认将函数当成是函数声明。
+  function foo(){/* code */}(1)
+  //它等同于如下，一个函数声明跟着一个完全没有关系的表达式:
+  function foo(){/* code */}
+  (1);
+  当圆括号包裹函数时，它会默认将函数作为表达式去解析，而不是函数声明。
+    (function(){/* code */})()  +function(){/* code */}();
+
+ajax  readState 0 未初始化 1 正在加载 2 加载完毕 3 交互 4 完成    
+
+
+promise原理：
+
+
+git merge 和 git rebase 区别
+
+  通过merge合并分支会新增一个merge commit，然后将两个分支的历史联系起来
+  其实是一种非破坏性的操作，对现有分支不会以任何方式被更改，但是会导致历史记录相对复杂
+
+  rebase会将整个分支移动到另一个分支上，有效地整合了所有分支上的提交
+  主要的好处是历史记录更加清晰，是在原有提交的基础上将差异内容反映进去，消除了 git merge所需的不必要的合并提交
+
+说说你对git reset 和 git revert 的理解？区别？
+  git revert是用一次新的commit来回滚之前的commit，git reset是直接删除指定的commit
+  git reset 是把HEAD向后移动了一下，而git revert是HEAD继续前进，只是新的commit的内容和要revert的内容正好相反，能够抵消要被revert的内容
+  在回滚这一操作上看，效果差不多。但是在日后继续 merge 以前的老版本时有区别
+
+  git revert是用一次新的commit来回滚之前的commit，git reset是直接删除指定的commit.
+  git reset 是把HEAD向后移动了一下，而git revert是HEAD继续前进，
+  只是新的commit的内容和要revert的内容正好相反，能够抵消要被revert的内容
+
+
+
+websocket：  
+  客户端可以检查到错误 服务端检测不到
+使用心跳机制： 为了保证连接的可持续性和稳定性  和 节约流量问题
+
+uniapp appid 被修改 会带来哪些问题
+  使用新 appid 打包的应用在更新时，会丢失老版应用本地缓存的数据，包括plus.storage、uni.setStorage保存的数据、plus.io保存的文件、plus.sqlite的数据等
+  无法使用新的 appid 进行 wgt 升级
+  开发者中心提供的相关云服务会出现多个应用，如统计数据、广告、换量、崩溃日志、用户反馈数据等。
+  uni push需要重新配置，否则无法推送
+  如果在插件市场购买过原生插件，这些插件会绑定appid。修改 appid 后无法继续使用插件，需要重新购买。
+  已开通uniad增强广告的应用，修改 appid 后会导致广告无法正常展示。
+  uni云端一体安全网络将无法使用
+
+
+setTimeout 和 setInterval 区别
+  setTimeout 最小执行时间是4ms
+  setInterval 最小执行时间是 10ms
+
+封装一个可复用的组件，需要满足什么条件：
+  1: 低耦合， 组件之间的依赖越小越好
+  2: 最好 从父级传入信息，不要在公共组件中请求数据
+  3: 传入的数据要进行校验
+  4: 处理事件的方法写在父组件中    
+
+
+es5和es6区别
+  1.ES6新增了let命令，用来声明变量
+  2.ES5只有全局作用域和函数作用域，没有块级作用域
+  3.es6提供了模板字符串(反引号)
+  4.ES5通过原型链实现继承：
+  5.ES6引入了Class（类）这个概念，更像面向对象编程的语法。
+  6.es6 使用箭头函数
+
+原数组改变的方法有：shift unshift reverse sort push pop splice
+不改变原数组的方法有：concat map filter join every some indexOf slice forEach
+
+async：指外部js文件和当前html页面同时加载（异步加载），在当前js文件加载完成后，执行js代码
+      但是当脚本加载完成后立即执行 js 脚本，这个时候如果文档没有解析完成的话同样会阻塞
+defer：指外部js文件和当前html页面同时加载（异步加载），但只在当前页面解析完成之后执行js代码
+    这个属性会让脚本的加载与文档的解析同步解析，然后在文档解析完成后再执行这个脚本文件，这样的话就能使页面的渲染不被阻塞
+
+
+排序算法：
+  直接排序 O(n^2)  空间复杂度 是1  稳定的
+  冒泡排序  o(n^2)  稳定的
+  快速排序  平均时间复杂度 nlog2^n  最坏 o(n^2)  不稳定排序
+  选择排序 o(n^2)  不稳定的
+  堆排序 nlog2^n
+  二路归并排序  nlog2^n
+
+垃圾回收：
+  JavaScript代码运行时，需要分配内存空间来储存变量和值。当变量不再参与运行时，就需要系统收回被占用的内存空间，这就是垃圾回收。
+  垃圾回收的方式：
+    1）标记清除 
+      当变量进入执行环境时，就标记这个变量“进入环境”，被标记为“进入环境”的变量是不能被回收的，因为他们正在被使用。当变量离开环境时，就会被标记为“离开环境”，
+      被标记为“离开环境”的变量会被内存释放。
+    2）引用计数： 引用计数就是跟踪记录每个值被引用的次数
+      当声明了一个变量并且将一个引用类型赋值给该变量的时候这个值的引用次数就为 1
+      如果同一个值又被赋给另一个变量，那么引用数加 1
+      如果该变量的值被其他的值覆盖了，则引用次数减 1
+      当这个值的引用次数变为 0 的时候，说明没有变量在使用，这个值没法被访问了，回收空间，垃圾回收器会在运行的时候清理掉引用次数为 0 的值占用的内存
+V8 垃圾回收机制：
+  新生代的对象为存活时间较短的对象，简单来说就是新产生的对象，通常只支持 1～8M 的容量，而老生代的对象为存活事件较长或常驻内存的对象，
+    简单来说就是经历过新生代垃圾回收后还存活下来的对象，容量通常比较大
+  新生代垃圾回收：
+    新加入的对象都会存放到使用区，当使用区快被写满时，就需要执行一次垃圾清理操作
+    当开始进行垃圾回收时，新生代垃圾回收器会对使用区中的活动对象做标记，标记完成之后将使用区的活动对象复制进空闲区并进行排序，随后进入垃圾清理阶段，即将非活动对象占用的空间清理掉。最后进行角色互换，把原来的使用区变成空闲区，把原来的空闲区变成使用区
+    当一个对象经过多次复制后依然存活，它将会被认为是生命周期较长的对象，随后会被移动到老生代中，采用老生代的垃圾回收策略进行管理
+    另外还有一种情况，如果复制一个对象到空闲区时，空闲区空间占用超过了 25%，那么这个对象会被直接晋升到老生代空间中，设置为 25% 的比例的原因是，当完成 Scavenge 回收后，空闲区将翻转成使用区，继续进行对象内存的分配，若占比过大，将会影响后续内存分配
+  老生代垃圾回收：
+    相比于新生代，老生代的垃圾回收就比较容易理解了，上面我们说过，对于大多数占用空间大、存活时间长的对象会被分配到老生代里，因为老生代中的对象通常比较大，
+      如果再如新生代一般分区然后复制来复制去就会非常耗时，从而导致回收执行效率不高，所以老生代垃圾回收器来管理其垃圾回收执行，
+      它的整个流程就采用的就是上文所说的标记清除算法了
+    首先是标记阶段，从一组根元素开始，递归遍历这组根元素，遍历过程中能到达的元素称为活动对象，没有到达的元素就可以判断为非活动对象
+    清除阶段老生代垃圾回收器会直接将非活动对象，也就是数据清理掉
+
+箭头函数与普通函数的区别
+（1）箭头函数比普通函数更加简洁
+（2）箭头函数没有自己的this
+（3）箭头函数继承来的this指向永远不会改变
+（4）call()、apply()、bind()等方法不能改变箭头函数中this的指向
+（5）箭头函数不能作为构造函数使用
+（6）箭头函数没有自己的arguments
+（7）箭头函数没有prototype
+
+ES Module 和 Common JS 区别？
+  ES6 module是编译时导出接口，CommonJS是运行时导出对象。
+  ES6 module输出的值的引用，CommonJS输出的是一个值的拷贝。
+  ES6 module导入模块的是只读的引用，CommonJS导入的是可变的，是一个普通的变量。
+  ES6 module语法是静态的，CommonJS语法是动态的。
+  ES6 module支持异步，CommonJS不支持异步
+
+
+在 Chrome 上，css 加载不会阻塞 HTML 解析，但会阻塞 DOM 渲染。
+Cookie有哪些字段，作用分别是什么
+  Name：cookie的名称
+  Value：cookie的值
+  Size： cookie的大小
+  Path：可以访问此 cookie 的页面路径。 
+  Secure： 指定是否使用HTTPS安全协议发送 Cookie。
+  Domain：可以访问该cookie的域名，Cookie 机制并未遵循严格的同源策略，允许一个子域可以设置或获取其父域的 Cookie
+  Expires/Max-size ： 此cookie的超时时间
+
+简单请求和复杂请求？
+  简单请求:简单请求不会触发CORS预检请求。
+  复杂请求: CORS请求会在正式通信之前进行一次HTTP查询请求，称为预检请求。
+
+
+Map 和Objects 的区别
+  一个Object 的键只能是字符串或者Symbols，但一个Map 的键可以是任意值。
+  Map 中的键值是有序的（FIFO 原则），而添加到对象中的键则不是。 Map 的键值对个数可以从size 属性获取，
+  而 Object 的键值对个数只能手动计算。  
+
+
+
+
+
+npm install vue-wxlogin --save-dev
+<wxlogin
+    :appid="$store.getters.wechat_app_id"
+    :scope="'snsapi_login'"
+    :theme="'black'"
+    :redirect_uri="encodeURIComponent($store.getters.base_url + 'new-home/#/new-home/structure/?num=' + Math.ceil(Math.random() * 1000))"
+    :href="'data:text/css;base64,LmltcG93ZXJCb3ggLnRpdGxlIHsNCiAgZGlzcGxheTogbm9uZTsNCn0NCi5pbXBvd2VyQm94IC5zdGF0dXMuc3RhdHVzX2Jyb3dzZXIgew0KICBkaXNwbGF5OiBub25lOw0KfQ0KLmltcG93ZXJCb3ggLnFyY29kZSB7DQogIGJvcmRlcjogbm9uZTsNCiAgd2lkdGg6IDIwMHB4Ow0KICBoZWlnaHQ6IDIwMHB4Ow0KfQ0KLmltcG93ZXJCb3ggLnN0YXR1c3sNCiAgZGlzcGxheTogbm9uZQ0KfQ=='"
+>
+</wxlogin>
+1:href自定义样式 base64编码
+2:redirect_uri: 回调地址，必须使用encodeURLComponent()编码 可以使用watch 也可以是用路由守卫钩子函数(建议使用路由钩子函数)
+3:appid： 应用id
+4:scope； 应用授权作用域
+5:theme 主题： white 和 black 两个
+
+
+
+1: 多个异步请求的并发限制
+  1: 可以使用递归实现
+  2: 循环的方式执行
+
+100w数据如何渲染：
+  1: 下拉式加载
+  2: 分批渲染
+  3: 可是窗口化
+  4: 懒加载
+
+Set集合允许存储null值 最多只有一个null元素
+Common.js 运行原理： Browserify 是目前最常用的 CommonJS 格式转换的工具。借助该工具就可以倒入使用
+CommonJS的核心思想是通过rquire方法来同步加载依赖的其他模块，通过module.exports到处需要暴露的接口。
+
+路由懒加载的原理：
+  路由懒加载的主要原理就是原本的Vue模块是全部导入在一起的打包文件，运行后用户查看相关模块显示的内容时会将整个打包的文件引入而后在其中查找对应的
+  模块然后才将其呈现给用户。 这样会使得在打包文件中查找对应模块时在浏览器中可能会出现短暂的空白页，从而降低用户体验
+
+  将需要进行懒加载的子模块打包成独立的文件（children chunk）；
+  借助函数来实现延迟执行子模块的加载代码；
+es6中的类中的静态方法以及继承
+  在类中的实例属性前添加static关键字，不能被实例继承，不在实例对象和原型对象上，只能通过 类名.属性名 调用；
+  在类中的方法添加static关键字，不能被实例继承，不在实例对象和原型对象上，只能通过 类名.方法名 调用。
+
+  1: 如何终止forearch 循环 可以使用报错 throw
+  2: 虚拟列表 可以解决 大数据展示
+前端如何处理多数据： 1: webwork 可以创建多进程  2: 采用虚拟数组进行渲染
+
+
+

@@ -1,0 +1,127 @@
+说说 typescript 的数据类型有哪些？
+    boolean（布尔类型）
+    number（数字类型）
+    string（字符串类型）
+    array（数组类型）
+    tuple（元组类型）
+    enum（枚举类型）
+    any（任意类型）
+    null 和 undefined 类型
+    void 类型
+    never 类型
+    object 对象类型
+
+说说你对 TypeScript 中枚举类型的理解？应用场景？
+  数字枚举  字符串枚举  异构枚举
+
+说说你对 TypeScript 中接口的理解？
+interface User {
+    name: string
+    age？: number
+}
+说说你对 TypeScript 中函数的理解？与 JavaScript 函数的区别？
+    从定义的方式而言，typescript 声明函数需要定义参数类型或者声明返回值类型
+    typescript 在参数中，添加可选参数供使用者选择
+    typescript 增添函数重载功能，使用者只需要通过查看函数声明的方式，
+        即可知道函数传递的参数个数以及类型
+
+说说你对 TypeScript 中泛型的理解 
+
+说说你对 TypeScript 装饰器的理解？
+    是一种在不改变原类和使用继承的情况下，动态地扩展对象功能
+    例如：
+    function addAge(constructor: Function) {
+        constructor.prototype.age = 18;
+    }
+
+    @addAge
+    class Person{
+    name: string;
+    age!: number;
+    constructor() {
+        this.name = 'huihui';
+    }
+    }
+
+    let person = new Person();
+
+console.log(person.age); // 18
+
+TypeScript中never和void的区别？
+    void 表示没有任何类型（可以被赋值为 null 和 undefined）。
+    never 表示一个不包含值的类型，即表示永远不存在的值。
+    拥有 void 返回值类型的函数能正常运行。拥有 never 返回值类型的函数无法正常返回，无法终止，或会抛出异常。
+
+TypeScript中的类型断言是什么？
+    类型断言可以用来手动指定一个值具体的类型，即允许变量从一种类型更改为另一种类型。
+    当你比 TS 更了解某个值的类型，并且需要指定更具体的类型时，我们可以使用类型断言。
+
+TS中any和unknown有什么区别？
+    unknown 和 any 的主要区别是 unknown 类型会更加严格：在对 unknown 类型的值执行大
+    多数操作之前，我们必须进行某种形式的检查。而在对 any 类型的值执行操作之前，我们不必进行任何检查。
+
+TS中的interface和type有什么区别？
+    1. type 可以描述任何类型组合，interface 只能描述对象结构；
+    2. type 可以使用 typeof 获取实例的类型进行赋值
+    3. 多个相同的 interface 声明可以自动合并
+
+简述工具类型 Exclude、Omit、Merge、Intersection、Overwrite的作用。
+    Exclude<T, U> 从 T 中排除出可分配给 U的元素。
+    Omit<T, K> 的作用是忽略T中的某些属性。
+    Merge<O1, O2> 是将两个对象的属性合并。
+    Compute<A & B> 是将交叉类型合并
+    Intersection<T, U>的作用是取T的属性,此属性同样也存在与U。
+    Overwrite<T, U> 是用U的属性覆盖T的相同属性。
+
+
+ TypeScript 中同名的 interface 或者同名的 interface 和 class 可以合并吗？
+   同名的interface会自动合并，同名的interface和class会自动聚合。
+
+TypeScript支持的访问修饰符。   
+    公共（Public），类的所有成员，其子类以及该类的实例都可以访问。
+    受保护（Projected），该类及其子类的所有成员都可以访问它们。 但是该类的实例无法访问。
+    私有（Private），只有类的成员可以访问它们。
+
+为啥要用ts
+    TypeScript通过对代码进行类型检查，可以帮助我们避免在编写JavaScript时经常遇到的令人痛苦的错误。 
+        强大的类型系统，包括泛型。 TypeScript只不过是带有一些附加功能的JavaScript。 TypeScript代码可以按照ES5和ES6标准编译，以支持最新的浏览器。   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1: type 和 interface 区别：
+  type 可以定义基本类型别名   interface 不行
+  type 可以联合声明 interface不行
+
+
+TypeScript 获取函数的参数类型、返回值类型
+    使用预定义的 Parameters 可以获取到一个函数的参数类型列表。
+    获取 test 函数的参数类型：
+    type TestArgsType = Parameters<typeof test>;
+    // TestArgsType => [lzwme: string, idx: number]
+    获取 idx 参数的类型：
+    type TestArgsType = Parameters<typeof test>[1];
+    // TestArgsType => idx: number
+
+    使用预定义的 ReturnType 可以获取到一个函数的参数类型列表。
+        获取 test 函数的返回值类型：
+        type TestReturnType = ReturnType<typeof test>;
+
+
+
+
+
+
+
+

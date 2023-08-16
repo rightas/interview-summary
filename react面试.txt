@@ -1,0 +1,351 @@
+1: react 生命周期
+  创建阶段: constructor  getDerivedStateFromProps render componentDidMount
+  更新阶段: getDerivedStateFromProps shouldComponentUpdate render getSnapshotBeforeUpdate componentDidUpdate
+  卸载阶段: componetWillUnmount  
+2: hook是啥， react为啥要用hook
+  hook：可以不编写class的情况下使用state以及其他的React特性.hook 是向下兼容的
+  hook解决的问题:
+    component非UI逻辑复用困难
+     （类组件在使用非UI逻辑复用时会用到高阶组件，高阶组件会存在一些问题: 1: 高阶组件的开发对开发者不友好 2:高阶组件之间组合性差 3:容易发生wrapper hell 递归嵌套）
+    组件的生命周期函数不适合side effect（side effect ）逻辑的管理 比如：可以写一些复用的hook（比如: 修改title）
+    不友好的Class Component class组件里面有this的指向问题 而hook没有，hook可以促进React的发展
+3: hook的原理
+  规则：不要在循环，条件或嵌套函数中调用 Hook， 确保总是在你的 React 函数的最顶层以及任何 return 之前调用他们
+  
+  React会维护俩个链表，一个是currentHook，另外一个是WorkInProgressHook,
+  每一个节点类型都是Hooks，每当hooks函数被调用，react就会创建一个hooks对象，
+  并挂在链表的尾部，函数组件之所以能做一些类组件不能做的事儿，就是因为hook对象，
+  函数组件的状态，计算值，缓存等都是交给hook去完成的，这样组件通过Fiber.memoizedState
+  属性指向hook链表的头部来关联hook对象和当前组件，这样就发挥了hooks的作用。
+  每次调用hooks API的时候，就会首先调用createWorkInProgressHook函数。
+  得到hooks的串联不是一个数组，而是一个链式结构，从根节点workInProgressHook
+  向下通过next进行串联，这也是为什么Hooks不能嵌套使用，不能在条件判断中使用，不能在循环中使用，
+  否则链式就会被破坏。
+4: redux使用时候有没有遇到哪些问题
+  1: 为何 type 必须是字符串，或者至少可以被序列化？ 为什么 action 类型应该作为常量
+    字符串是可序列化的、自解释型，所以是更好的选择
+  2: 为何组件没有被重新渲染、或者 mapStateToProps 没有运行？
+    React Redux 会在 shouldComponentUpdate 中对新的 props 进行浅层的判等检查，以期提升性能，如果所有的引用都是相同的，则返回 false 从而跳过此次对组件的更新
+    可以使用Object.assign() 或者 _.extend() 方法复制对象 slice() 和 concat() 方法复制数组
+  3: 在 store enhancer 中可以存在多个 middleware 链吗？ 在 middleware 方法中，next 和 dispatch 之间区别是什么？
+    Redux middleware 就像一个链表。每个 middleware 方法既能调用 next(action) 传递 action 到下一个 middleware，也可以调用 dispatch(action) 重新开始处理，或者什么都不做而仅仅终止 action 的处理进程。
+    创建 store 时， applyMiddleware 方法的入参定义了 middleware 链。定义多个链将无法正常执行，因为它们的 dispatch 引用显然是不一样的，而且不同的链也无法有效连接到一起。
+5: 说说 React中的setState执行机制
+   1: 异步更新(第二个参数) 2: 同步更新（setTimeout）
+   setState 采用的是任务队列机制，不会马上执行，而是加入队列，在下次事件循环中执行
+
+    在组件生命周期或React合成事件中，setState是异步
+    在setTimeout或者原生dom事件中，setState是同步
+6: 说说React的事件机制？   
+  基于浏览器的事件机制自身实现了一套事件机制，包括事件注册、事件的合成、事件冒泡、事件派发等
+  合成事件（SyntheticEvent）: 合成事件是 React模拟原生 DOM事件所有能力的一个事件对象，即浏览器原生事件的跨浏览器包装器
+  执行顺序：
+    React 所有事件都挂载在 document 对象上
+    当真实 DOM 元素触发事件，会冒泡到 document 对象后，再处理 React 事件
+    所以会先执行原生事件，然后处理 React 事件
+    最后真正执行 document 上挂载的事件
+    原生DOM事件（比如ref的addEventListern） - React事件 (onClick事件)- 原生事件（js事件）
+7: React构建组件的方式有哪些？区别？   
+  1: 函数式创建   2: 通过 React.createClass 方法创建 3: 继承 React.Component 创建
+8: React中组件之间如何通信 
+  1: 父组件向子组件传递 props  子-父 调用父传过来函数
+  2: 兄弟组件之间的通信 （1）借助父来传递 （2）PubSub.js PubSub.pulish(事件名, msg); PubSub.subscribe(事件名，函数)； PubSub.unsubscribe(事件名);
+  3: 父组件向后代组件传递 
+    使用context提供来组件之间通讯的一种方式，React.createContext()；
+    创建： const PriceContext = React.createContext();  <PriceContext.Provider value={100}></PriceContext.Provider>
+    使用： let price = this.context;
+  4: 非关系组件传递 redux
+9: React中的key有什么作用？ 
+  React 也存在 Diff算法，而元素key属性的作用是用于判断元素是新创建的还是被移动的元素，从而减少不必要的元素渲染
+10: react diff原理
+  1:把树形结构按照层级分解，只比较同级元素。
+  2:给列表结构的每个单元添加唯一的 key 属性，方便比较。
+  3:React 只会匹配相同 class 的 component（这里面的 class 指的是组件的名字）
+  4:合并操作，调用 component 的 setState 方法的时候, React 将其标记为 dirty. 
+    到每一个事件循环结束, React 检查所有标记 dirty 的 component 重新绘制.
+  5:选择性子树渲染。开发人员可以重写 shouldComponentUpdate 提高 diff 的性能。
+
+
+11: 说说对React refs 的理解？应用场景？
+  允许我们访问 DOM节点或在 render方法中创建的 React元素
+  使用； createRef() useRef() 传入函数 ref={e=> this.a =e}
+  应用场景：
+    对Dom元素的焦点控制、内容选择、控制
+    对Dom元素的内容设置及媒体播放
+    对Dom元素的操作和对组件实例的操作
+    集成第三方 DOM 库
+12: 说说对React中类组件和函数组件的理解？有什么区别
+  1:编写形式 类组件是通过Class 函数式组件: 大写的函数
+  2:状态管理  类组件有自己的state状态 函数式组件在hook以后有自己的状态
+  3:生命周期 类组件有自己的生命周期 函数式组件在hook以后有自己的生命周期
+  4:调用方式 函数组件 调用是执行函数 类组件 需要实例化
+  5:获取渲染的指 类组件有this  函数式组件无
+13: 说说对受控组件和非受控组件的理解？应用场景？  
+  1: 受控组件，简单来讲，就是受我们控制的组件，组件的状态全程响应外部数据 如表单
+  2: 非受控组件，简单来讲，就是不受我们控制的组件
+  优先选择受控组件 符合react设计规范 操作DOM 选择非受控组件
+14: 说说对高阶组件的理解？应用场景
+  高阶组件能够提高代码的复用性和灵活性，在实际应用中，常常用于与核心业务无关但又在多个模块
+  使用的功能，如权限控制、日志记录、数据校验、异常处理、统计上报等
+15:  说说你对Redux的理解？其工作原理？
+  redux就是一个实现上述集中管理的容器，遵循三大基本原则：
+  1: 单一数据源 2: state 是只读的 3: 使用纯函数来执行修改
+    1:createStore可以帮助创建 store
+    2:store.dispatch 帮助派发 action , action 会传递给 store
+    3:store.getState 这个方法可以帮助获取 store 里边所有的数据内容
+    4:store.subscrible 方法订阅 store 的改变，只要 store 发生改变， store.subscrible 这个函数接收的这个回调函数就会被执行
+16: 说说对Redux中间件的理解？常用的中间件有哪些？实现原理？
+  redux-thunk是官网推荐的异步处理中间件
+  原理： 所有中间件被放进了一个数组chain，然后嵌套执行，最后执行store.dispatch。
+  可以看到，中间件内部（middlewareAPI）可以拿到getState和dispatch这两个方法
+17: 说说你对React Router的理解？常用的Router组件有哪些？  
+  组件： BrowserRouter、HashRouter Route Link、NavLink switch redirect
+  Route的属性： path：用于设置匹配到的路径 component：设置匹配到路径后，渲染的组件
+              render：设置匹配到路径后，渲染的内容 exact：开启精准匹配，只有精准匹配到完全一致的路径，才会渲染对应的组件
+  参数传递：
+  1: 动态路由传参 参数不丢失  <Route path="/detail/:id" component={Detail}/>  props.match.params.xxx
+  2: search传递参数 参数不丢失  <NavLink to="/detail2?name=why&age=18">详情2</NavLink> props.location.search
+  3: to传入对象 
+    <NavLink to={{
+      pathname: "/detail2", 
+      query: {name: "kobe", age: 30},
+      state: {height: 1.98, address: "洛杉矶"},
+      search: "?apikey=123"
+    }}>
+    详情2
+  </NavLink>
+     props.location.state（参数不丢失） 或者 props.location.query（参数丢失）
+
+18: 说说React Router有几种模式？实现原理？
+  1: HashRouter  通过window.addEventListener('hashChange',callback)监听hash值的变化，并传递给其嵌套的组件
+   hash 值改变，触发全局 window 对象上的 hashchange 事件。所以 hash 模式路由就是利用 hashchange 事件监听 URL 的变化，从而进行 DOM 操作来模拟页面跳转
+  2: BrowserRouter history 模式：允许操作浏览器的曾经在标签页或者框架里访问的会话历史记录
+
+19: 说说React render方法的原理？在什么时候会被触发？
+render函数里面可以编写JSX，转化成createElement这种形式，用于生成虚拟DOM，最终转化成真实DOM
+在React 中，类组件只要执行了 setState 方法，就一定会触发 render 函数执行，函数组件使用useState更改状态不一定导致重新render
+组件的props 改变了，不一定触发 render 函数的执行，但是如果 props 的值来自于父组件或者祖先组件的 state
+在这种情况下，父组件或者祖先组件的 state 发生了改变，就会导致子组件的重新渲染
+所以，一旦执行了setState就会执行render方法，useState 会判断当前值有无发生改变确定是否执行render方法，一旦父组件发生渲染，子组件也会渲染
+
+20: react Diff算法使用深度优先
+深度优先遍历：对每一个可能的分支路径深入到不能再深入为止，而且每个节点只能访问一次
+            （二叉树的深度优先遍历比较特殊，可以细分为先序遍历，中序遍历，后序遍历）。
+广度优先遍历：又叫层次遍历从上往下对每一层依次访问，在每一层中，从左往右
+            （也可以从右往左）访问节点，访问完一层就继续访问下一层，直到没有节点可以访问为止。
+
+21: react 中常见的 hook
+useState Hook
+  让函数组件具有 修改state的 能力，因为在函数式组件中，没有 this 。React 会在重复渲染时保留这个 state。
+  const [age, setAge] = useState(42);
+Effect Hook
+  React 组件中执行过数据获取、订阅或者手动修改过 DOM。我们统一把这些操作称为“副作用”，或者简称为“作用
+useLayoutEffect
+  与 useEffect 作用相同，但它会同步调用 effect(当useEffect里面的操作DOM,并且会改变
+  页面的样式,就需要用这个,否则可能会出现闪屏问题)
+useContext
+           
+  实现跨组件间的数据传输
+  通过 createContext() 创建 MyContext 对象 并返回设置的初始值
+  父组件使用 <MyContext.Provider value={{xx:xx}}> 向后代组件传递信息，当 <MyContext.Provider> 更新时，该 Hook 会触发重渲染，更新value值。
+  在子组件中使用 useContext(MyContext) 获取上下文
+
+useReducer
+  代替原来redux里的reducer,配合useContext一起使用
+  reducer 与 redux 的区别：
+  reducer 用于单个组件的状态管理，适用于复杂的 state 变化
+  redux 是全局状态管理，支持多组件间的共享数据
+  在组件间的通信还是使用props
+   const [count, dispath] = useReducer((state,action)=> {
+       switch(action){
+           case 'add':
+                return state + 1;
+            case 'sub':
+                return state - 1;
+            default:
+                return state;
+       }
+    }, 0);
+
+useCallback
+useMemo
+  传入 useMemo 的函数会在渲染期间执行。请不要在这个函数内部执行与渲染无关的操作。useMemo 在每次渲染时都会计算新的值。
+useRef
+  返回一个可变的 ref 对象，该对象只有个 current 属性，初始值为传入的参数( initialValue )
+  返回的 ref 对象在组件的整个生命周期内保持不变
+  当更新 current 值时不会引发组件重新渲染
+  更新 useRef 是 side effect (副作用)，所以一般写在 useEffect 或 event handler 里
+  useRef 类似于类组件的 this
+useImperativeHandle  
+  useImperativeHandle 可以让你在使用 ref 时自定义暴露给父组件的实例值。在大多数情况下，
+  应当避免使用 ref 这样的命令式代码。useImperativeHandle 应当与 forwardRef 一起使用：
+
+22: memo 和 callback有啥区别
+const fnA = useCallback(fnB, [a])
+useMemo返回缓存的变量，useCallback返回缓存的函数
+  使用场景是：有一个父组件，其中包含子组件，子组件接收一个函数作为props；通常而言，
+  如果父组件更新了，子组件也会执行更新；但是大多数场景下，更新是没有必要的，
+  我们可以借助useCallback来返回函数，然后把这个函数作为props传递给子组件；
+  这样，子组件就能避免不必要的更新。
+
+useCallback使用场景:
+  函数作为其他 hook 的依赖项时（如在 useEffect()中）；
+  函数作为 React.memo()（或 shouldComponentUpdate ）中的组件的 props；
+  
+pureComponent 和 memo Immutable.js
+  对 Immutable对象的任何修改或添加删除操作都会返回一个新的 Immutable对象
+  export default class ComponentSon extends PureComponent{}
+  export default React.memo(MyComponent, areEqual);
+  function areEqual(prevProps, nextProps) {}
+
+  PureComponent,SCU中实现了浅比较
+  memo,函数组件中的PureComponent
+  浅比较已使用大部分情况(尽量不要作深度比较)
+
+Portals 传送门  使用场景 reactDom.createPortals(内容，节点)
+  1: overflow： hidden 2:父组件z-index 太小  3: flex需要放在body第一层级
+异步组件
+  React.lazy(()=> import(组件路径))
+
+react  父组件更新后 默认子组件也会更新    
+
+高阶组件 HOC  传入一个组件  return 一个组件
+
+render Props
+  核心思想：  通过一个函数将 class 组件的 state 作为 props 传递给纯函数组件
+
+如何实现组件的懒加载
+  React 提供了 lazy 和 Suspense 来实现懒加载。
+  import React, { lazy, Suspense } from 'react';
+  const OtherComponent = lazy(() => import('./OtherComponent'));
+  function MyComponent() {
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <OtherComponent />
+      </Suspense>
+    );
+  }
+什么是合成事件，与原生事件有什么区别？
+  React 中所有触发的事件，都是自己在其内部封装了一套事件机制。目的是为了实现全浏览器的一致性，抹平不同浏览器之间的差异性。
+  在 React17 之前，React 是把事件委托在 document 上的，React17 及以后版本不再把事件委托在 document 上，而是委托在挂载的容器上。
+  React 合成事件采用的是事件冒泡机制，当在某具体元素上触发事件时，等冒泡到顶部被挂载事件的那个元素时，才会真正地执行事件。
+  而原生事件，当某具体元素触发事件时，会立刻执行该事件。因此若要比较事件触发的先后时机时，原生事件会先执行，React 合成事件会后执行
+
+React 的 diff 过程
+  React 只对比当前层级的节点，不跨层级进行比较；
+  根据不同的节点类型，如函数组件节点、类组件节点、普通 fiber 节点、数组节点等，进入不同的处理函数；
+  前后两个 fiber 节点进行对比，若 type 不一样，直接舍弃掉旧的 fiber 节点，创建新的 fiber 节点；若 key 不一样，则需要根据情况判断，若是单个元素，
+    则直接舍弃掉，创建新的 fiber 节点；若是数字型的元素，则查找是否移动了位置，若没找到，则创建新的节点；若 key 和 type 都一样，则接着往下递归；
+  若是单个 fiber 节点，则直接返回；若是并列多个元素的 fiber 节点，这里会形成单向链表，然后返回头指针（该链表最前面的那个 fiber 节点）；
+
+React18有哪些更新？
+  setState自动批处理：react18，将所有事件都进行批处理，即多次setState会被合并为1次执行，提高了性能，在数据层，
+                    将多个状态更新合并成一次处理（在视图层，将多次渲染合并成一次渲染）
+  flushSync：批量更新是一个破坏性的更新，如果想退出批量更新，可以使用flushSync
+
+
+
+react DOM 转换过程
+  JSX - React.createElement() - _jsx - 虚拟DOM
+
+react key作用：
+  1: react 会比较更新前后的key是否相同，如果相同就复用该组件，如果不同，就会卸载原来组件，重新渲染新组件
+
+
+版本变化：
+  react15的reconciler是stack-reconciler。
+  即是采用递归形式工作的，是同步的，在生成虚拟dom树并diff过程中是无法中断的。
+  这样在组件层级过深时，会造成js执行时间过长，浏览器无法布局和绘制，造成丢帧。
+ 
+  react16的reconciler是fiber-reconciler。
+  即采用的异步可中断更新代替react15的同步更新，react16的scheduler调度器会告诉reconciler，浏览器是否有空闲时间执行js脚本。
+  这样就不会影响浏览器的绘制和布局工作。不会丢帧。
+  在react16中，原来的虚拟DOM,因其结构已不能满足异步可中断更新的需求，改而采用新的结构Fiber。
+  虚拟dom节对应变为Fiber节点，虚拟dom树对应变为Fiber树。
+  大人物拆分小任务
+
+react17 和 react18的区别就是：从同步不可中断更新变成了异步可中断更新。
+react18:
+  1: createRoot() 的 root API，替换现有的 render() 函数
+  2: createRoot() API 还是 React 18 中另一个改进的入口——自动批处理。在 React 的早期版本中，
+    状态更新在 React 事件侦听器中完成时已经批量处理了，以优化性能并避免重渲染。从 React 18 开始，
+    状态更新也将被安排到其他地方——比如在 Promise、setTimeout 回调和原生事件处理程序中。
+  3: 除了 Suspense 支持之外，React 的 SSR 方面还有很多其他变化。将 Suspense 与 SSR 流式传输和懒惰水合（lazy hydration）相结合，
+    意味着你的服务端渲染应用将尽快水合并可用
+  4: 与 React Suspense 结合使用时，transition 的效果是最好的。由于一些改进，Suspense 现在可以很好地与并发渲染集成、在服务器上工作，并且可能很快支持 lazy() 加载组件之外的用例
+  5: 并发渲染器是 React 渲染系统的一项幕后特性。它允许并发渲染，即同时在后台准备多个版本的 UI。这意味着更好的性能和更平滑的状态转换。
+
+react17:
+  1: React 将不再向 document 附加事件处理器。而会将事件处理器附加到渲染 React 树的根 DOM 容器中：  
+  2: 更加靠近浏览器原生事件
+    onFocus/onBlur直接采用原生focusin/focusout事件；
+    onScroll 不再冒泡；
+    捕获阶段的事件监听直接采用原生 DOM 事件监听机制。
+  3: DOM 事件复用池被废弃
+  4: Effect Hook 清理操作改为异步执行
+  作为 componentDidMount 使用，第二个参数为空数组 []
+  作为 componentDidUpdate 使用，第二个参数为指定依赖
+  作为 componentWillUnmount 使用，通过 return
+    useEffect(() => {
+      // This is the effect itself.
+      return () => {
+        // 以前同步执行，React 17之后改为异步执行
+        // This is its cleanup.
+      };
+    });
+  5: 删除部分暴露出来的私有 API  react native中
+
+
+fiber架构：
+  在React16以前，React更新是通过树的深度优先遍历完成的，遍历是不能中断的，当树的层级深就会产生栈的层级过深，
+  页面渲染速度变慢的问题，为了解决这个问题引入了fiber，React fiber就是虚拟DOM，它是一个链表结构，
+  返回了return、children、siblings，分别代表父fiber，子fiber和兄弟fiber，随时可中断
+React渲染流程
+  React用JSX描述页面，JSX经过babel编译为render function，执行后产生VDOM，VDOM不是直接渲染的，会先转换为fiber，
+  再进行渲染。vdom转换为fiber的过程叫reconcile，转换过程会创建DOM，全部转换完成后会一次性commit到DOM，
+  这个过程不是一次性的，而是可打断的，这就是fiber架构的渲染流程
+
+useEffect 和 useLayoutEffect 区别
+  useEffect 是异步执行的，而useLayoutEffect是同步执行的。
+  useEffect 的执行时机是浏览器完成渲染之后，而 useLayoutEffect 的执行时机是浏览器把内容真正渲染到界面之前，和 componentDidMount 等价。
+总结
+  优先使用 useEffect，因为它是异步执行的，不会阻塞渲染
+  会影响到渲染的操作尽量放到 useLayoutEffect中去，避免出现闪烁问题
+  useLayoutEffect和componentDidMount是等价的，会同步调用，阻塞渲染
+  在服务端渲染的时候使用会有一个 warning，因为它可能导致首屏实际内容和服务端渲染出来的内容不一致。
+
+封装过哪些hook
+ 1: 防抖截流
+ 2: 前端的数据存储离不开 localStorage 和 sessionStorage
+
+
+fiber:
+Fiber：一种将 recocilation （递归 diff），拆分成无数个小任务的算法；它随时能够停止，恢复。停止恢复的时机取决于当前的一帧（16ms）内，还有没有足够的时间允许计算。
+Fiber 节点拥有 parent, child, sibling 三个属性，分别对应父节点， 第一个孩子， 它右边的兄弟， 有了它们就足够将一棵树变成一个链表， 实现深度优化遍历。
+  链表结构： child（子节点） return（父节点） siblig（兄弟节点） 遍历
+
+React.memo 的作用是 缓存 组件，它会对传入的组件加上缓存功能生成一个新组件，然后返回这个新组件。 
+  在传给组件的props 的属性和值没有发生改变的情况下，它会使用最近一次缓存的结果，而不会进行重新的渲染，实现跳过组件渲染的效果  
+
+你对 Time Slice的理解?
+  React 在渲染（render）的时候，不会阻塞现在的线程。如果你的设备足够快，你会感觉渲染是同步的。如果你设备非常慢，你会感觉还算是灵敏的。
+  虽然是异步渲染，但是你将会看到完整的渲染，而不是一个组件一行行的渲染出来。
+  同样书写组件的方式，时间分片正是基于可随时打断、重启的Fiber架构，可打断当前任务，优先处理紧急且重要的任务，保证页面的流畅运行。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

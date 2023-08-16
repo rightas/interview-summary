@@ -1,0 +1,94 @@
+兼容问题汇总：
+    1: 时间日期上的兼容
+    // 正则yyyy-mm-dd 转换 yyyy/mm/dd
+        let newTime = oldTime.replace(/-/g,'/')
+    2: Api相关
+        ios调用wx.makePhoneCall()时，先有自下而上的弹窗，点击弹窗上的电话，再拨打电话；
+        Android和鸿蒙在调用wx.makePhoneCall()时，直接复制电话号码，并跳转到手机拨打电话页面
+        方案：
+        在调用拨打电话api前，判断设备型号（获取系统信息wx.getSystemInfo() 异步调用同步返回/wx.getSystemInfoAsync()异步返回），
+        非ios优先展示自定义电话弹窗组件，点击“电话号码”时再调用拨打电话事件,ios直接调用api。在调用拨打电话api前，判断设备型号
+        （获取系统信息wx.getSystemInfo() 异步调用同步返回/wx.getSystemInfoAsync()异步返回），非ios优先展示自定义电话弹窗组件，
+        点击“电话号码”时再调用拨打电话事件,ios直接调用api。
+    3: wx.enableAlertBeforeUnload()监听右滑返回上一页询问对话框不弹出
+        安卓右滑正常弹出询问对话框，【取消】留在当页，【确定】返回上一页；
+        ios无弹窗拦截。
+        解决思路：
+            该api仅支持安卓右滑手势，不支持ios。同时，wx.enableAlertBeforeUnload()仅作弹框提示，
+            不支持自定义样式和按钮文字。回调函数是个摆设，不能写入任何事件，如果在当前页面销毁时有其他动作，
+            应注意ios兼容问题，在onLoad周期中做销毁动作。同时，建议在onLoad周期中也写入wx.disableAlertBeforeUnload()取消监听，
+            避免其他页面可能会弹出弹窗的情况。
+
+    4: 官方textarea的maxlenght属性不限制字符长度
+        业务要求限制最大输入长度为196位，且右下角显示【输入位数/196】，ios正常限制；
+        安卓和鸿蒙可以输入197位，同时右下角显示【197/196】；
+        所以在用户输入的时候用原生JS截取字符串处理，同时在≥196位时，限制右下角数字长度为196，三个系统显示一致。
+        let inputValNew = e.detail.value  //绑定bindinput事件取值
+        if (inputValNew.length >= 196) {
+        this.setData({
+            extension: e.detail.value.slice(0, 196),  //输入框文字
+            textnum: 196  //右下角文字长度
+        })
+        } else {
+        this.setData({
+            extension: e.detail.value,
+            textnum: e.detail.value.length
+        })
+        }
+    5: Vant   Cell单元格内容显示不全
+        ios和Android内容随高度撑开，多行文本显示；
+        鸿蒙单行文本显示部分文字
+        尽管已对Cell单元格右侧内容样式类value-class设置跟随内容撑开，但内容为数字时依然单行文本显示部分文字（全英文、英文+数字的情况下，未测试展示效果）。
+        将Cell单元格更换为Field输入框，同时配置：autosize（内容随高度自适应），disabled，input-align：right。
+    6: Popup等组件和原生textarea等标签层级冲突
+        解决方向有两个：（1）z-index设置层级；（2）绝大部分时候z-index无法解决，可以写一个textarea同级标签用来显示输入值，在出现穿透情况时，显示同级标签，
+        隐藏textarea
+
+    7: canvas 问题 需要作兼容处理
+
+    8: input输入框在ios中光标及字体不居中
+        问题： input输入框在ios中光标及字体不居中 原因： 使用line-height垂直居中。
+        解决办法： 给input设置lineline-height来让输入内容居中或者上下偏移是不可取的，推荐使用padding撑开高度
+
+    9: 移动端1像素边框问题   
+
+2: 小程序怎么跟随事件传值
+    在  页面标签上通过 绑定 dataset-key = value ， 然后绑定点击通过e.currentTarget.dataset.key   来获取标签上绑定的值。
+3；小程序的生命周期函数
+    onLoad  :  页面加载时触发。一个页面只会调用一次，可以在 onLoad的参数中获取打开当前页面路径中的参数
+    onShow :   页面显示 / 切入前台时触发调用。
+    onReady :  页面初次渲染完成时触发,一个页面只会调用一次。
+    onHide : 页面隐藏 / 切入后台时触发，如 navigateTo 或底部tab切换到其他页面，小程序切入后台等
+    onUnload : 页面卸载时触发。如 redirectTo或 navigateBack 到其他页面时.
+4: 小程序跳转    
+    wx.navigateTo() : 保留当前页面，跳转到应用内的某个页面。但是不能跳到 tabbar 页面
+    wx.redirectTo() :  关闭当前页面，跳转到应用内的某个页面。但是不允许跳转到 tabbar 页面
+    wx.switchTab()  :  跳转到 TabBar 页面，并关闭其他所有非 tabBar 页面
+    wx.navigateBack() : 关闭当前页面，返回上一页面或多级页面。可通过getCurrentPages() 获取当前的页面栈，决定需要返回几层
+    wx.reLaunch() :  关闭所有页面，打开到应用的某个页面。
+
+5:  小程序运行机制
+    冷启动：用户首次打开小程序或被微信主动销毁再次打开的情况，此时小程序需要重新加载启动。
+    热启动 ：假如用户已经打开了某个小程序，在一定时间内再次打开小程序的话，这个时候我们就不再需要重新启动了，这需要把我们的后台打开的小程序切换到前台来使用。
+
+6: bindtap和catchtap的区别是什么?
+    相同点：首先他们都是作为点击事件函数，就是点击时触发。在这个作用上他们是一样的，可以不做区分
+    不同点：他们的不同点主要是bindtap是不会阻止冒泡事件的，catchtap是阻值冒泡的
+
+7. 简述微信小程序原理？
+    小程序本质就是一个单页面应用，所有的页面渲染和事件处理，都在一个页面内进行，但又可以通过微信客户端调用原生的各种接口；
+    它的架构，是数据驱动的架构模式，它的UI和数据是分离的，所有的页面更新，都需要通过对数据的更改来实现；
+    它从技术讲和现有的前端开发差不多，采用JavaScript、WXML、WXSS三种技术进行开发；
+    功能可分为webview和appService两个部分；
+    webview用来展现UI，appService有来处理业务逻辑、数据及接口调用；
+    两个部分在两个进程中运行，通过系统层JSBridge实现通信，实现UI的渲染、事件的处理等。
+
+    或
+
+    微信小程序采用JavaScript、wxml、wxss三种技术进行开发，与现有前端开发的区别：
+    JavaScript的代码是运行在微信APP中的，因此一些h5技术的应用需要微信APP提供对应的API支持；
+    wxml微信自己基于xml语法开发的，因此在开发时只能使用微信提供的现有标签，html的标签是无法使用的；
+    wxss具有css的大部分特性，但并不是所有都支持没有详细文档（wxss的图片引入需使用外链地址，没有body，样式可直接使用import导入）。
+
+    微信的架构，是数据驱动的架构模式，它的UI和数据是分离的，所有的页面更新，都需要通过对数据的更改来实现。
+    小程序功能分为webview和APPservice，webview主要用来展示UI，appservice用来处理业务逻辑、数据及接口调用。它们在两个进程中进行，通过系统层JSBridge实现通信，实现UI的渲染、事件处理。

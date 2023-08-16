@@ -1,0 +1,413 @@
+1: webpack 是一个用于现代JavaScript应用程序的静态模块打包工具
+2: 初始化流程 - 编译构建流程 - 输出流程
+3: 说说webpack中常见的Loader？解决了什么问题？
+  loader 用于对模块的"源代码"进行转换，在 import 或"加载"模块时预处理文件
+  关于loader的配置，我们是写在module.rules属性中，属性介绍如下：
+    style-loader: 将css添加到DOM的内联样式标签style里
+    css-loader :允许将css文件通过require的方式引入，并返回css代码
+    less-loader: 处理less
+    sass-loader: 处理sass
+    postcss-loader: 用postcss来处理CSS
+    autoprefixer-loader: 处理CSS3属性前缀，已被弃用，建议直接使用postcss
+    file-loader: 分发文件到output目录并返回相对路径
+    url-loader: 和file-loader类似，但是当文件小于设定的limit时可以返回一个Data Url
+    html-minify-loader: 压缩HTML
+    babel-loader :用babel来转换ES6文件到ES
+    eslint-loader：通过 ESLint 检查 JavaScript 代码
+    tslint-loader：通过 TSLint检查 TypeScript 代码
+    vue-loader：加载 Vue.js 单文件组件
+    ts-loader: 将 TypeScript 转换成 JavaScript
+    babel-loader：把 ES6 转换成 ES5
+
+  class CustomPlugin{
+    constructor(options){
+      // 这里可以得到配置信息
+    }
+    apply(compiler){
+      compiler.hooks.run.tap('CustomPlugin', (Compilation) => {
+      /* do sth */
+      });
+    }
+  }
+plugin： 生命周期：
+  apply：当插件被加载时调用。
+  compiler.hooks.compilation.tap：在一次新的编译（compilation）开始时调用。
+  compiler.hooks.make.tapAsync：在开始一次新的编译前调用。
+  compilation.hooks.buildModule.tap：在一个模块（module）被构建之前调用。
+  compilation.hooks.optimize.tap：在优化器（optimizer）运行之前调用。
+  compilation.hooks.optimizeChunkAssets.tapAsync：在每个 chunk 的文件被优化之前调用。
+  compilation.hooks.optimizeTree.tap：在优化树（tree）之前调用。
+
+4:说说webpack中常见的Plugin？解决了什么问题？ 
+  plugin赋予其各种灵活的功能，例如打包优化、资源管理、环境变量注入等，它们会运行在 webpack 的不同阶段（钩子 / 生命周期），
+  贯穿了webpack整个编译周期  目的在于解决loader 无法实现的其他事
+  文件的配置方式，一般情况，通过配置文件导出对象中plugins属性传入new实例对象
+  常见plugin:
+    1:HtmlWebpackPlugin 在打包结束后，⾃动生成⼀个 html ⽂文件，并把打包生成的js 模块引⼊到该 html 中
+      new HtmlWebpackPlugin({
+       title: "My App",
+       filename: "app.html",
+       template: "./src/html/index.html"
+     }) 
+    2:clean-webpack-plugin 删除（清理）构建目录 new CleanWebpackPlugin(),
+    3:mini-css-extract-plugin 提取 CSS 到一个单独的文件中
+      new MiniCssExtractPlugin({
+      filename: '[name].css'
+      }),
+
+    html-webpack-plugin：简化 HTML 文件创建 (依赖于 html-loader)
+    define-plugin：定义环境变量 (Webpack4 之后指定 mode 会自动配置)
+    uglifyjs-webpack-plugin：不支持 ES6 压缩 (Webpack4 以前)
+    webpack-parallel-uglify-plugin: 多进程执行代码压缩，提升构建速度
+    speed-measure-webpack-plugin: 可以看到每个 Loader 和 Plugin 执行耗时 (整个打包耗时、每个 Plugin 和 Loader 耗时)
+    webpack-bundle-analyzer: 可视化 Webpack 输出文件的体积 (业务组件、依赖第三方模块)
+    happy-pack plugin
+
+
+5: 说说Loader和Plugin的区别？编写Loader，Plugin的思路？      
+  loader 是文件加载器，能够加载资源文件，并对这些文件进行一些处理，诸如编译、压缩等，最终一起打包到指定的文件中
+  plugin 赋予了 webpack 各种灵活的功能，例如打包优化、资源管理、环境变量注入等，目的是解决 loader 无法实现的其他事
+
+6: 说说webpack的热更新是如何做到的？原理是什么？
+  关于webpack热模块更新的总结如下：
+    通过webpack-dev-server创建两个服务器：提供静态资源的服务（express）和Socket服务
+    express server 负责直接提供静态资源的服务（打包后的资源直接被浏览器请求和解析）
+    socket server 是一个 websocket 的长连接，双方可以通信
+    当 socket server 监听到对应的模块发生变化时，会生成两个文件.json（manifest文件）和.js文件（update chunk）
+    通过长连接，socket server 可以直接将这两个文件主动发送给客户端（浏览器）
+    浏览器拿到两个新的文件后，通过HMR runtime机制，加载这两个文件，并且针对修改的模块进行更新
+7: 说说如何借助webpack来优化前端性能？
+  JS代码压缩
+  CSS代码压缩 CSS的压缩我们可以使用另外一个插件：css-minimizer-webpack-plugin
+    optimization: {
+      minimize: true,
+      minimizer: [
+          new CssMinimizerPlugin({
+              parallel: true
+          })
+      ]
+    }
+  terser-webpack-plugin
+  optimization: {
+    minimizer: [new TerserPlugin(
+      parallel: true   // 多线程
+    )],
+  },
+  Html文件代码压缩
+    plugin:[
+        new HtmlwebpackPlugin({
+            ...
+            minify:{
+                minifyCSS:false, // 是否压缩css
+                collapseWhitespace:false, // 是否折叠空格
+                removeComments:true // 是否移除注释
+            }
+        })
+    ]
+  文件大小压缩
+    new ComepressionPlugin({
+        test:/\.(css|js)$/,  // 哪些文件需要压缩
+        threshold:500, // 设置文件多大开始压缩
+        minRatio:0.7, // 至少压缩的比例
+        algorithm:"gzip", // 采用的压缩算法
+    })
+  图片压缩
+  Tree Shaking
+    css进行tree shaking优化可以安装PurgeCss插件
+      new PurgeCssPlugin({
+            path:glob.sync(`${path.resolve('./src')}/**/*`), {nodir:true}// src里面的所有文件
+            satelist:function(){
+                return {
+                    standard:["html"]
+                }
+            }
+        })
+  代码分离
+    optimization:{
+        splitChunks:{
+            chunks:"all"
+        }
+    }
+  内联 chunk
+8: 如何提高webpack的构建速度？  
+  优化 loader 配置
+  合理使用 resolve.extensions
+  优化 resolve.modules
+  优化 resolve.alias
+  使用 DLLPlugin 插件
+    plugins:[
+        new webpack.DllPlugin({
+            name:'dll_[name]',
+            path:path.resolve(__dirname,"./dll/[name].mainfest.json")
+        })
+    ]
+  使用 cache-loader
+    rules: [
+        {
+            test: /\.ext$/,
+            use: ['cache-loader', ...loaders],
+            include: path.resolve('src'),
+        },
+    ],
+  terser 启动多线程
+  合理使用 sourceMap
+
+9:webpack的核心概念
+  Entry：入口，Webpack 执行构建的第一步将从 Entry 开始，可抽象成输入。告诉webpack要使用哪个模块作为构建项目的起点，默认为./src/index.js
+  output ：出口，告诉webpack在哪里输出它打包好的代码以及如何命名，默认为./dist
+  Module：模块，在 Webpack 里一切皆模块，一个模块对应着一个文件。Webpack 会从配置的 Entry 开始递归找出所有依赖的模块。
+  Chunk：代码块，一个 Chunk 由多个模块组合而成，用于代码合并与分割。
+  Loader：模块转换器，用于把模块原内容按照需求转换成新内容。
+  Plugin：扩展插件，在 Webpack 构建流程中的特定时机会广播出对应的事件，插件可以监听这些事件的发生，在特定时机做对应的事情。
+10: 什么是bundle，什么是chunk，什么是module
+  bundle：是由webpack打包出来的文件
+  chunk：是指webpack在进行模块依赖分析的时候，代码分割出来的代码块
+  module：是开发中的单个模块
+
+什么是文件指纹？  
+  Webpack的文件指纹是指在打包过程中为每个文件生成唯一的标识符，以便于版本管理和缓存控制。
+  文件指纹的实现原理是根据文件内容生成哈希值，一般是利用Webpack内置的HashedModuleIdsPlugin和MiniCssExtractPlugin来实现。
+了解过Tree-shaking吗？
+  概念：Tree-shaking又叫摇树优化，是通过静态分析消除JS模块中未使用的代码，减小项目体积。
+  原理：Tree-shaking依赖于ES6的模块机制，因为ES6模块是静态的，编译时就能确定模块的依赖关系。对于非ES6模块的代码或者动态引入的代码，无法被消除掉。
+  配置：Tree-Shaking需要配置optimization选项中的usedExports为true，同时在babel配置中使用babel-preset-env，开启modules选项为false，
+        这样可以保证ES6模块在编译时不会被转换为CommonJS模块。
+有没有写过自定义的loader？
+  loader本质是一个函数，接受源代码作为参数，返回处理后的结果，举个最简单的例子：
+  module.exports = function(source) {
+    return source.toLowerCase();   // 将源代码所有字母转成小写
+  };
+  在开发自定义loader时可以借助loader-utils这个工具库
+有没有写过自定义的plugin？
+  自定义plugin本质是一个类，这个类实现了apply方法，在apply方法中，通过compiler对象注册一个或多个Webpack生命周期事件的监听器，然后在监听器函数中，实现自定义的逻辑
+  class MyPlugin {
+    apply(compiler) {
+        compiler.hooks.done.tap('MyPlugin', (stats) => {
+          console.log('Bundle is now finished!\n');
+          console.log(stats.toString());
+        });
+      }
+  }
+  module.exports = MyPlugin;
+Webpack事件机制了解吗？
+  Webpack的事件机制是基于Tapable实现的，Tapable是Webpack事件机制的核心类，它封装了事件的订阅和发布机制。
+  在Webpack中，Compiler对象和Compilation对象都是Tapable类的实例对象。
+
+有了解过Webpack5吗，相比于Webpack4有哪些提升？
+  更快的构建速度：Webpack5在构建速度方面进行了大量优化，尤其是在开发模式下，构建速度有了明显提升。
+  Tree Shaking优化：Webpack5进一步改进了Tree Shaking算法，可以更准确地判断哪些代码是无用的，从而更好地优化构建输出的文件大小。
+  内置的持久化缓存：Webpack5在持久化缓存方面进行了优化，可以缓存每个模块的编译结果，从而加速后续的构建。
+  支持WebAssembly：Webpack5增加了对WebAssembly的原生支持。
+  模块联邦（Module Federation）：Webpack5引入了模块联邦的概念，可以实现多个独立的Webpack构建之间的模块共享和远程加载，为微前端架构提供了更好的支持。
+
+什么是 WebAssembly？
+  WebAssembly（缩写为 wasm）是一种使用非 JavaScript 代码，并使其在浏览器中运行的方法。这些代码可以是 C、C++ 或 Rust 等。
+  它们会被编译进你的浏览器，在你的 CPU 上以接近原生的速度运行。这些代码的形式是二进制文件，你可以直接在 JavaScript 中将它们当作模块来用。
+
+Webpack怎么优化开发环境？
+  开发环境常见的问题有：
+    启动慢。
+    编译慢，尤其是当项目变大时，修改一行代码要等好几秒甚至十几秒才能看到效果。
+    占用内存高，当模块数变多时，项目运行占用内存飙升，导致电脑卡顿，影响开发效率。
+  优化措施：
+    使用缓存：可以使用Webpack的缓存功能，将打包结果缓存起来以避免重复构建。可以使用cache-loader或hard-source-webpack-plugin等插件来实现缓存。
+    使用 DllPlugin：DllPlugin 是 Webpack 的一个插件，它可以将一些不经常变动的第三方库预先打包好，然后在开发过程中直接使用。这样可以减少每次构建时对这些库的重复打包，提高构建速度。
+    配置合适的SourceMap策略：在开发环境下，开启 SourceMap 可以帮助我们快速定位错误和调试代码。但是开启 SourceMap 会降低构建速度，所以需要权衡是否开启。
+    多线程并行打包：可以使用thread-loader或happypack开启多线程并行构建，但是并不是一定会提升性能，需要结合场景来自行取舍，比较适合单个耗时长的任务。
+    配置模块解析：Webpack 在模块解析时会搜索 node_modules 目录，这个过程比较耗时。为了减少搜索时间，我们可以使用 resolve.alias 配置选项来告诉 Webpack 直接使用特定的路径来查找模块。
+    使用新技术，比如Webpack5或者Vite这些性能更好的构建工具。
+
+Webpack怎么优化打包结果？
+  打包体积分析：使用webpack-bundle-analyzer来分析，一般脚手架里直接运行命令行就能生成打包体积图，很方便，然后可以根据包体积能定向优化。
+  代码压缩：使用UglifyJsPlugin、MiniCssExtractPlugin等插件来对JS代码和CSS代码进行压缩，减小代码体积，实际开发中一般脚手架也会默认有压缩的配置。
+  使用懒加载：可以使用Webpack的动态导入功能，实现懒加载，在需要时再加载代码块。这可以缩短首屏加载时间，提升体验。
+  开启gzip：使用compression-webpack-plugin插件，生成额外的gzip静态文件，然后部署时再开启Nginx的gzip即可。
+  使用splitChunks提取公共代码，在脚手架中一般是默认开启的。
+  分离第三方库：将第三方库从应用程序代码中分离出来，单独打包，这样可以提高缓存效率并减小应用程序代码的大小。
+  开启Tree Shaking，对于Vue和React项目，一般是默认开启Tree Shaking的，我们在编写代码时尽量使用ES模块化语法，就可以了。
+
+webpack 构建过程
+
+  初始化参数：从配置文件和 Shell 语句中读取与合并参数，得出最终的参数
+  开始编译：用上一步得到的参数初始化 Compiler 对象，加载所有配置的插件，执行对象的 run 方法开始执行编译
+  确定入口：根据配置中的 entry 找出所有的入口文件
+  编译模块：从入口文件出发，调用所有配置的 Loader 对模块进行翻译，再找出该模块依赖的模块，再递归本步骤直到所有入口依赖的文件都经过了本步骤的处理
+  完成模块编译：在经过第4步使用 Loader 翻译完所有模块后，得到了每个模块被翻译后的最终内容以及它们之间的依赖关系
+  输出资源：根据入口和模块之间的依赖关系，组装成一个个包含多个模块的 Chunk，再把每个 Chunk 转换成一个单独的文件加入到输出列表，这步是可以修改输出内容的最后机会
+  输出完成：在确定好输出内容后，根据配置确定输出的路径和文件名，把文件内容写入到文件系统
+
+聊一聊Babel原理吧
+
+Babel 是现代 JavaScript 语法转换器
+babel的转译过程也分为三个阶段：parsing、transforming、generating
+
+  解析 Parse: 将代码解析生成抽象语法树( 即AST )，即词法分析与语法分析的过程
+  转换 Transform: 对于 AST 进行变换一系列的操作，babel 接受得到 AST 并通过 babel-traverse 对其进行遍历，在此过程中进行添加、更新及移除等操作
+  生成 Generate: 将变换后的 AST 再转换为 JS 代码, 使用到的模块是 babel-generator
+
+Babel 大概分为三大部分:
+  解析: 将代码(其实就是字符串)转换成 AST( 抽象语法树)
+  转换: 访问 AST 的节点进行变换操作生成新的 AST
+  生成: 以新的 AST 为基础生成代码
+
+模块打包原理知道吗？  
+  Webpack 实际上为每个模块创造了一个可以导出和导入的环境，本质上并没有修改 代码的执行逻辑，代码执行顺序与模块加载顺序也完全一致。
+
+Webpack tree shaking 失效了
+  因为tree-shaking是针对静态结构进行分析，只有import和export是静态的导入和导出。而commonjs有动态导入和导出的功能，无法进行静态分析。
+  sideEffects 作用于模块层面，而 /*#__PURE__*/ 注释作用于代码语句层面
+  1: babel编译默认将模块转换为commonjs，需要配置
+    .babelrc的{module:false} 
+    需要开启 useExports: true才会让 tree shaking 生效
+  和 package.json的{sideEffects: false}才可以进行tree-shaking
+
+
+esMoudle 和 CommonJS 区别
+ esm:  import {a} from 'b.js'  export {a};
+ CommonJS:  module.exports = {}  引入： require 方式
+
+
+chunk 和 bundle的 区别是什么：
+  chunk：
+    chunk是webpack打包过程中modules的集合，是(打包过程中的)的概念
+    webpack的打包是从一个入口模块开始，入口模块引用其他模块，其他模块引用其他模块.....
+    webpack 通过引用关系逐个打包模块，这些module就形成一个chunk
+    如果有多个入口模块，可能会产生多条打包路径对吧， 每条路径都会形成一个chunk
+
+  bundle:
+    是我们最终输出的一个或者多个打包好的文件  
+  budle 和 chunk的关系：
+     chunk是过程代码快 bundle 是结果输出的代码快， chunk在构建完成就呈现bundle
+    大多数情况下， 一个chunk会产生一个bundle， 但是也有例外
+    如果加了 sourcemap, 一个entry，一个chunk 对应两个 bundle
+
+
+Compiler:
+  包含了webpack环境的所有配置信息，包括：options, plugins, loader,
+  webpack启动的时候实例化，它在全局是唯一的，可以理解成webpack的实例
+compliation:
+  包含了当前的模块资源，编译生成资源，webpack在开发模式下运行的时候，每当检测到一个文件变化，就会创建一次新的compliation  
+plugin:
+  扩展插件，webpack运行的各个阶段，都会广播出对应的事件，插件去监听对应的事件
+loader：
+  模块转换器，将非js模块转化为webpack能识别的js模块
+  本质上，webpack  loader将所有类型的文件，转换为应用程序的****依赖图****可以直接引用的模块  
+
+proxy 原理：
+  proxy工作原理实质上是利用http-proxy-middleware 这个http代理中间件，实现请求转发给其他服务器
+  在开发阶段，webpack-dev-server 会启动一个本地开发服务器，所以我们的应用在开发阶段是独立运行在 localhost 的一个端口上，
+    而后端服务又是运行在另外一个地址上；
+  所以在开发阶段中，由于浏览器同源策略的原因，当本地访问后端就会出现跨域请求的问题。
+  通过设置webpack proxy实现代理请求后，相当于浏览器与服务端添加一个代理者
+  当本地发送请求的时候，代理服务器响应该请求，并将请求转发到目标服务器，
+    目标服务器响应数据后再将数据返回给代理服务器，最终由代理服务器将数据响应给本地。
+
+
+vite比webpack 快的原因
+  1: vite 不需要做全量的打包，这是比 webpack 要快的最主要的原因；
+  2: vite 在解析模块依赖关系时，利用了 esbuild，更快（esbuild 使用 Go 编写，并且比以 JavaScript 编写的打包器预构建依赖快 10-100 倍）；
+  3: 按需加载；模块之间的依赖关系的解析由浏览器实现。Vite 只需要在浏览器请求源码时进行转换并按需提供源码。根据情景动态导入代码，即只在当前屏幕上实际使用时才会被处理。
+  4: 充分利用缓存；Vite 利用 HTTP 头来加速整个页面的重新加载（再次让浏览器为我们做更多事情）：源码模块的请求会根据 304 Not Modified 进行协商缓存，而依赖模块请求则会通过 Cache-Control: max-age=31536000,immutable 进行强缓存，因此一旦被缓存它们将不需要再次请求。
+
+vite 对比 webpack ，优缺点在哪
+优点:
+  更快的冷启动：Vite 借助了浏览器对 ESM 规范的支持，采取了与 Webpack 完全不同的 unbundle 机制
+  更快的热更新：Vite 采用 unbundle 机制，所以 dev server 在监听到文件发生变化以后，只需要通过 ws 连接通知浏览器去重新加载变化的文件，剩下的工作就交给浏览器去做了。
+缺点：
+1：开发环境下首屏加载变慢：由于 unbundle 机制，Vite 首屏期间需要额外做其它工作。不过首屏性能差只发生在 dev server 启动以后第一次加载页面时发生。
+    之后再 reload 页面时，首屏性能会好很多。原因是 dev server 会将之前已经完成转换的内容缓存起来
+2： 开发环境下懒加载变慢：跟首屏加载变慢的原因一样。Vite 在懒加载方面的性能也比 Webpack 差。由于 unbundle 机制，动态加载的文件，
+    需要做 resolve、load、transform、parse 操作，并且还有大量的 http 请求，导致懒加载性能也受到影响。
+3: webpack支持的更广。由于 Vite 基于ES Module，所以代码中不可以使用CommonJs；webpack更多的关注兼容性, 而Vite 关注浏览器端的开发体验。
+    Vite目前生态还不如 Webpack。
+
+Vite 优化打包
+1: gzip压缩
+  viteCompression({
+    verbose: true, // 是否在控制台中输出压缩结果
+    disable: false,
+    threshold: 10240, // 如果体积大于阈值，将被压缩，单位为b，体积过小时请不要压缩，以免适得其反
+    algorithm: 'gzip', // 压缩算法，可选['gzip'，' brotliccompress '，'deflate '，'deflateRaw']
+    ext: '.gz',
+    deleteOriginFile: true // 源文件压缩后是否删除(我为了看压缩后的效果，先选择了true)
+  })
+2: 图片压缩
+  plugin: [
+    viteImagemin(
+      {
+        gifsicle: {
+          optimizationLevel: 7,
+          interlaced: false
+        },
+    ) 
+  ]
+3: 去除debugger
+  terserOptions: {
+    compress: {
+      drop_console: true,
+      drop_debugger: true
+    }
+  }
+
+4;拆分包
+  rollupOptions: {
+    output: {
+      manualChunks(id) {
+        // 将 node_modules 中的代码单独打包成一个 JS 文件
+        if (id.includes("node_modules")) {
+          // 让每个插件都打包成独立的文件
+          return id .toString() .split("node_modules/")[1] .split("/")[0] .toString(); 
+        }
+      }
+    }
+  }
+
+5: cdn 加速
+export default defineConfig({
+  plugins: [
+    viteCDNPlugin({
+      // 需要 CDN 加速的模块
+      modules: [
+        {
+          name: 'lodash',
+          var: '_',
+          path: `https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js`
+        }
+      ]
+    })
+  ]
+})
+
+jest配置；
+  var pkgJson = {
+    "jest":{
+          "verbose": true,  // 层次显示测试套件中每个测试的结果。
+          "bail": false, //是否显示日志信息
+          "testEnvironment": "node",//测试环境
+          "testRegex": "(/__tests__/.*|\\\\.(test|spec))\\\\.(ts|tsx|js)$", //测试用例目录
+          "moduleFileExtensions": [ //覆盖的文件类型
+              "ts",
+              "tsx",
+              "js"
+          ],
+          "coveragePathIgnorePatterns": [ //忽略的目录
+              "/node_modules/",
+              "/test/"
+          ],
+          "coverageThreshold": { // 测试报告阀值
+              "global": {
+                  "branches": 80,
+                  "functions": 80,
+                  "lines": 80,
+                  "statements": 80
+              }
+          },
+          "collectCoverageFrom": [ //测试覆盖文件
+              "commands/*.{js,ts}",
+              "libs/*.{js,ts}",
+              "!libs/pot.js"
+          ]
+    }
+  }
+
+

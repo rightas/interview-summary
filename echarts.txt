@@ -1,0 +1,12 @@
+常用组件
+  1: title 标题组件 show text link
+  2: toolbox 工具栏 导出图片 数据视图 切换 缩放 show orient feature
+  3: tooltip tigger 触发类型
+  4: markPoint 标注点
+  5: markLine 图标的标线
+
+
+
+
+
+
