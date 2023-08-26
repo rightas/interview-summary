@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,10 +9,14 @@
   <style>
     p+div {
       color: red;
-      
+
     }
-    P:first-of-type{color: red}
-    .circle{
+
+    P:first-of-type {
+      color: red
+    }
+
+    .circle {
       /* width: 100px; */
       /* height: 100px; */
       /* background: red; */
@@ -19,7 +24,8 @@
       border-width: 50px;
       border-color: red transparent  transparent transparent ; */
     }
-    #c1{
+
+    #c1 {
       /* width: 100px; */
       /* height: 100px; */
       /* background: red; */
@@ -29,7 +35,7 @@
       width: 0px;
       height: 0px;
       border-right: 100px solid transparent;
-      border-top: 100px solid  transparent;
+      border-top: 100px solid transparent;
       border-left: 100px solid transparent;
       border-bottom: 100px solid red;
 
@@ -43,15 +49,27 @@
     } */
   </style>
 </head>
+
 <body>
   <div class="container">
-        <p>1</p>
-        <p>2</p>
-        <p>3</p>
-        <p>4</p>
-        <p>5</p>
+    <p>1</p>
+    <p>2</p>
+    <p>3</p>
+    <p>4</p>
+    <p>5</p>
     <div></div>
   </div>
   <div class="circle" id="c1"></div>
+  <script>
+    class Demo {
+      static b = 100
+      constructor() {
+        this.a = 100
+      }
+    }
+    let a = new Demo()
+    console.log(a, '000', Demo.b)
+  </script>
 </body>
+
 </html>
